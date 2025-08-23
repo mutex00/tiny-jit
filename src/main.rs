@@ -4,6 +4,10 @@ mod parser;
 mod ast;
 mod codegen;
 mod vm;
+mod ir;
+mod jit;
+
+
 
 use bytecode::Module;
 use parser::Parser;

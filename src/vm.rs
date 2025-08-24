@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 
 use crate::bytecode::BC;
-use crate::bytecode::Module;
+use crate::codegen::Module;
 
 
 
@@ -21,7 +21,7 @@ impl<'m> VM<'m> {
         Self { module, env_stack: vec![HashMap::new()] }
     }
 
-    fn with_frame<F: FnOnce(&mut VM) -> Value>(&mut self, mut f: F) -> Value {
+    fn with_frame<F: FnOnce(&mut VM) -> Value>(&mut self, f: F) -> Value {
         self.env_stack.push(HashMap::new());
         let ret = f(self);
         self.env_stack.pop();

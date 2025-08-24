@@ -9,10 +9,9 @@ mod jit;
 
 
 
-use bytecode::Module;
+use codegen::Module;
 use parser::Parser;
 use lexer::Lexer;
-use codegen::compile_module;
 use vm::VM;
 
 
@@ -56,7 +55,7 @@ fn main() {
     let ast = parser.parse_program();
 
     // Compile
-    let module = compile_module(ast);
+    let module = codegen::compile_module(ast);
     dump_module(&module);
 
     // Run

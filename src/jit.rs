@@ -3,6 +3,7 @@ use crate::bytecode::BC;
 
 
 use std::collections::HashMap;
+use std::u16;
 
 struct Recorder {
     ir: IR,
@@ -40,11 +41,41 @@ impl Recorder{
         })
     }
 
-    fn emit_loadvar();
+    fn emit_loadvar(&mut self, sym: u16) -> Ref {
+        if let Some(&r) = self.env.get(&sym){ return r; };
 
-    fn emit_storevar();
+        let r = self.ir.push(IRIns {
+            op : IROp::LoadVar,
+            ty : IRType::Int,
+            a: Ref(sym),
+            b: Ref::NONE,
+            prev_same_op: u16::MAX
+        });
 
-    fn emit_print();
+        self.env.insert(sym, r);
+        r
+    }
+
+    fn emit_storevar(&mut self, sym: u16, v: Ref) {
+        if self.env.get(&sym).copied() == Some(v) { return; }
+        self.ir.push(IRIns { 
+            op: IROp::StoreVar,
+            ty: IRType::Any,
+            a: Ref(sym),
+            b: v, 
+            prev_same_op: u16::MAX });
+        self.env.insert(sym, v);
+    }
+
+    fn emit_print(&mut self, v: Ref) {
+        self.ir.push(IRIns {
+            op: IROp::Print,
+            ty: IRType::Any,
+            a: v,
+            b: Ref::NONE,
+            prev_same_op: u16::MAX
+        });
+    }
 
     pub fn record(&mut self, bc: Vec<BC>){
         for op in bc {
@@ -65,12 +96,12 @@ impl Recorder{
                     self.stack.push(r);
                 }
                 BC::StoreVar(name) => {
-                    let v = self.stack.pop();
+                    let v = self.stack.pop().expect("stack underflow");
                     let sym = self.ir.intern_sym(name.as_str());
                     self.emit_storevar(sym, v);
                 }
                 BC::Print => {
-                    let v = self.stack.pop();
+                    let v = self.stack.pop().expect("stack underflow");
                     self.emit_print(v);
                 }
                 BC::Call(name, n_args) => {

@@ -1,17 +1,38 @@
-
 /* ================= Codegen ================= */
 use std::collections::HashMap;
 
 use crate::ast::*;
 use crate::bytecode::*;
 
+
+#[derive(Debug, Clone)]
+pub struct FunctionProto {
+    pub name: String,
+    pub params: Vec<String>,
+    pub code: Vec<BC>,
+}
+
+
+#[derive(Debug, Clone)]
+pub struct Module {
+    pub funs: HashMap<String, FunctionProto>,
+    pub main: FunctionProto,
+}
+
+
 pub fn gen_expr(code: &mut Vec<BC>, e: &Expr) {
     match e {
         Expr::Number(n) => code.push(BC::LoadConst(*n)),
-        Expr::Var(v)    => code.push(BC::LoadVar(v.clone())),
-        Expr::Add(a, b) => { gen_expr(code,a); gen_expr(code,b); code.push(BC::Add); }
+        Expr::Var(v) => code.push(BC::LoadVar(v.clone())),
+        Expr::Add(a, b) => {
+            gen_expr(code,a); 
+            gen_expr(code,b); 
+            code.push(BC::Add); 
+        }
         Expr::Call(name, args) => {
-            for a in args { gen_expr(code, a); }
+            for a in args {
+                gen_expr(code, a);
+            }
             code.push(BC::Call(name.clone(), args.len()));
         }
     }
